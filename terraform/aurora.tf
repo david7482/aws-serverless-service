@@ -7,22 +7,6 @@ data "aws_rds_engine_version" "postgresql" {
   version = "13.6"
 }
 
-data "aws_subnets" "public" {
-  filter {
-    name   = "vpc-id"
-    values = [var.vpc_id]
-  }
-
-  tags = {
-    Purpose = "public-subnet"
-  }
-}
-
-data "aws_security_group" "default" {
-  vpc_id = var.vpc_id
-  name   = "default"
-}
-
 resource "aws_db_subnet_group" "postgresql" {
   name       = local.aurora_postgresql_name
   subnet_ids = data.aws_subnets.public.ids
@@ -47,7 +31,8 @@ resource "aws_security_group" "postgresql" {
   }
 
   tags = {
-    Name = "${local.aurora_postgresql_name}-postgresql-sg"
+    Name        = "${local.aurora_postgresql_name}-postgresql-sg"
+    Environment = var.env
   }
 
   lifecycle {
@@ -56,7 +41,8 @@ resource "aws_security_group" "postgresql" {
 }
 
 resource "random_password" "postgres_password" {
-  length = 16
+  length  = 16
+  special = false
 }
 
 resource "aws_ssm_parameter" "postgres_password" {
