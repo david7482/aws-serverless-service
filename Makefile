@@ -43,8 +43,10 @@ run: build
 migrate-db:
 	docker run --rm -v $(shell pwd)/migration:/migration --network host migrate/migrate -verbose -path=/migration/ -database=$(DATABASE_DSN) up
 
-check-%:
-	@if [ "$(filter $*, staging production)" = "" ]; then \
-		echo "Could not read valid environment: $* (Need to be 'staging' or 'production')"; \
-		exit 1;\
-	fi
+docker:
+	docker buildx build \
+	--platform="linux/amd64,linux/arm64" \
+	-t 553321195691.dkr.ecr.us-west-2.amazonaws.com/chatbot-serverless-service:production \
+	-t 553321195691.dkr.ecr.us-west-2.amazonaws.com/chatbot-serverless-service:production-${GIT_REV} \
+	-f Dockerfile . \
+	--push
