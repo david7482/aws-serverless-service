@@ -1,4 +1,4 @@
-package chat
+package message
 
 import (
 	"context"
@@ -16,4 +16,9 @@ type ChannelRepository interface {
 type LineService interface {
 	ValidateSignature(ctx context.Context, externalChannelSecret, signature string, payload []byte) bool
 	ParseLineEvents(ctx context.Context, payload []byte) ([]domain.LineEvent, domain.Error)
+}
+
+//go:generate mockgen -destination automock/eventbridge.go -package=automock . EventBridge
+type EventBridge interface {
+	PutEvent(ctx context.Context, data string) domain.Error
 }

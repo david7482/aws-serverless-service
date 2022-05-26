@@ -42,7 +42,7 @@ func ReceiveWebhookFromLine(app *app.Application) gin.HandlerFunc {
 		}
 
 		// Invoke service
-		err = app.ChatService.ReceiveWebhookFromLine(ctx, domain.LineWebhook{
+		err = app.MsgService.ReceiveWebhookFromLine(ctx, domain.LineWebhook{
 			ExternalChannelID: externalChannelID,
 			Signature:         lineSignature,
 			Payload:           payload,

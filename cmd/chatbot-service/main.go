@@ -22,9 +22,10 @@ var (
 )
 
 const (
-	defaultEnv      = "staging"
-	defaultLogLevel = "info"
-	defaultPort     = "8000"
+	defaultEnv       = "staging"
+	defaultLogLevel  = "info"
+	defaultPort      = "8000"
+	defaultAWSRegion = "us-west-2"
 )
 
 type AppConfig struct {
@@ -37,6 +38,10 @@ type AppConfig struct {
 
 	// Database configuration
 	DatabaseDSN *string
+
+	// AWS configuration
+	AWSRegion          *string
+	AWSEventBridgeName *string
 }
 
 func initAppConfig() AppConfig {
@@ -61,6 +66,14 @@ func initAppConfig() AppConfig {
 	config.DatabaseDSN = app.
 		Flag("database_dsn", "The database DSN").
 		Envar("DATABASE_DSN").Required().String()
+
+	config.AWSRegion = app.
+		Flag("aws_region", "The AWS region").
+		Envar("AWS_REGION").Default(defaultAWSRegion).String()
+
+	config.AWSEventBridgeName = app.
+		Flag("aws_eventbridge_name", "The AWS EventBridge bus name").
+		Envar("AWS_EVENTBRIDGE_NAME").Required().String()
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
@@ -106,7 +119,9 @@ func main() {
 
 	// Create application
 	app := app.MustNewApplication(rootCtx, app.ApplicationParams{
-		DatabaseDSN: *cfg.DatabaseDSN,
+		DatabaseDSN:        *cfg.DatabaseDSN,
+		AWSRegion:          *cfg.AWSRegion,
+		AWSEventBridgeName: *cfg.AWSEventBridgeName,
 	})
 
 	// Run server

@@ -16,6 +16,7 @@ const (
 
 type LineEvent struct {
 	ExternalMemberID string
-	EventContent     []byte
 	EventType        LineEventType
+	ReplyToken       string
+	EventContent     []byte
 }

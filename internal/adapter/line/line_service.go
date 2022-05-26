@@ -99,9 +99,10 @@ func (s *LineService) ParseLineEvents(_ context.Context, payload []byte) ([]doma
 	for _, lineEvent := range request.LineEvents {
 		content, _ := lineEvent.MarshalJSON()
 		event := domain.LineEvent{
-			ExternalMemberID: lineEvent.Source.UserID,
-			EventContent:     content,
 			EventType:        domain.LineEventType(lineEvent.Type),
+			ExternalMemberID: lineEvent.Source.UserID,
+			ReplyToken:       lineEvent.ReplyToken,
+			EventContent:     content,
 		}
 
 		events = append(events, event)
@@ -121,4 +122,41 @@ func (s *LineService) GetChannelInfo(ctx context.Context, accessToken string) (*
 		return nil, domain.NewExternalError("", nil, err)
 	}
 	return info, nil
+}
+
+type SendMessageParams struct {
+	AccessToken string
+	Messages    []linebot.SendingMessage
+	ReplyToken  string
+	To          string // userId, groupId, roomId
+	RetryKey    string
+}
+
+// SendMessage would take care of PushMessage and ReplyMessage internally. It would also fall back
+// to PushMessage if ReplyMessage fail.
+func (s *LineService) SendMessage(ctx context.Context, params SendMessageParams) (err error) {
+	bot, _ := linebot.New("not-used", params.AccessToken)
+
+	// If we have reply token, we would try ReplyMessage() first.
+	if params.ReplyToken != "" {
+		_, err = bot.ReplyMessage(params.ReplyToken, params.Messages...).
+			WithContext(ctx).
+			Do()
+		if err == nil {
+			return nil
+		}
+	}
+
+	// Try pushMessage() if we have To field
+	if params.To != "" {
+		_, err = bot.PushMessage(params.To, params.Messages...).
+			WithContext(ctx).
+			WithRetryKey(params.RetryKey).
+			Do()
+		if err == nil {
+			return nil
+		}
+	}
+
+	return err
 }
