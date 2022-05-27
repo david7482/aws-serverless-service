@@ -54,6 +54,13 @@ module "container_definition" {
     secretOptions = []
   }
 
+  environment = [
+    {
+      name  = "AWS_EVENTBRIDGE_NAME"
+      value = aws_cloudwatch_event_bus.message_bus.name
+    },
+  ]
+
   secrets = [
     {
       name      = "DATABASE_DSN"

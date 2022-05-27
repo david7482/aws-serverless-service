@@ -2,7 +2,7 @@
 # IAM
 ################################
 resource "aws_iam_role" "service_task_execution_role" {
-  name = "${var.app_name}-${var.region}-${var.env}-role"
+  name = "david74-${var.app_name}-${var.region}-${var.env}-role"
 
   assume_role_policy = <<EOF
 {
@@ -44,6 +44,16 @@ data "aws_iam_policy_document" "inline_policy" {
     ]
     resources = [
       "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/${var.app_name}-*",
+    ]
+  }
+
+  statement {
+    effect  = "Allow"
+    actions = [
+      "events:PutEvents",
+    ]
+    resources = [
+      aws_cloudwatch_event_bus.message_bus.arn,
     ]
   }
 

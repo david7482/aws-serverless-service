@@ -8,6 +8,7 @@ EXTRA_LD_FLAGS=-X main.AppVersion=${GIT_BRANCH}-${GIT_REV} -X main.AppBuild=${BU
 GOLANGCI_LINT_VERSION="v1.42.1"
 
 DATABASE_DSN="postgresql://chatbot_test:chatbot_test@localhost:5432/chatbot_test?sslmode=disable"
+AWS_EVENTBRIDGE_NAME="message-bus-production"
 
 # Setup test packages
 TEST_PACKAGES = ./internal/...
@@ -33,11 +34,13 @@ mock:
 	@go generate ./...
 
 build:
-	go build -ldflags '${EXTRA_LD_FLAGS}' -o bin/chatbot ./cmd/
+	go build -ldflags '${EXTRA_LD_FLAGS}' -o bin/chatbot        ./cmd/chatbot-service
+	go build -ldflags '${EXTRA_LD_FLAGS}' -o bin/chatbot-worker ./cmd/chatbot-worker
 
 run: build
 	./bin/chatbot \
 	--database_dsn=$(DATABASE_DSN) \
+	--aws_eventbridge_name=$(AWS_EVENTBRIDGE_NAME) \
 
 # Migrate db up to date
 migrate-db:
