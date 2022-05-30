@@ -118,6 +118,11 @@ resource "aws_ecs_task_definition" "main" {
   container_definitions    = jsonencode([
     module.container_definition.json_map_object,
   ])
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "ARM64"
+  }
 }
 
 ################################
@@ -153,9 +158,15 @@ resource "aws_ecs_service" "main" {
   deployment_minimum_healthy_percent = 100
 
   capacity_provider_strategy {
-    capacity_provider = "FARGATE_SPOT"
+    capacity_provider = "FARGATE"
+    base              = 1
     weight            = 1
   }
+
+  #  capacity_provider_strategy {
+  #    capacity_provider = "FARGATE_SPOT"
+  #    weight            = 1
+  #  }
 
   network_configuration {
     security_groups  = [data.aws_security_group.default.id]

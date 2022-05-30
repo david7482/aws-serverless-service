@@ -47,5 +47,9 @@ variable "ecs_cluster_name" {
 }
 
 variable "desired_task_count" {
-  default = 1
+  default = 3
+}
+
+variable "max_task_count" {
+  default = 10
 }
