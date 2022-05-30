@@ -17,7 +17,7 @@ locals {
   route53_record_alias_zone_id = aws_alb.alb.zone_id
 }
 
-resource "aws_route53_record" "public" {
+resource "aws_route53_record" "service" {
   zone_id = data.aws_route53_zone.main.zone_id
   name    = format(
     "%s%s.%s",
@@ -31,5 +31,17 @@ resource "aws_route53_record" "public" {
     evaluate_target_health = true
     name                   = local.route53_record_alias_name
     zone_id                = local.route53_record_alias_zone_id
+  }
+}
+
+resource "aws_route53_record" "slide" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = local.cloudfront_fqdn
+  type    = "A"
+
+  alias {
+    evaluate_target_health = false
+    name                   = aws_cloudfront_distribution.slide.domain_name
+    zone_id                = aws_cloudfront_distribution.slide.hosted_zone_id
   }
 }
